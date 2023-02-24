@@ -67,7 +67,11 @@ class Server:
 
     def send(self):
         while True:
-            content = input("")
+            content = input()
+
+            if content == ':q':
+                self.close()
+            
             now_time = time.strftime(
                 '%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             msg = self.name + '  ' + str(now_time) + '\n' + content
@@ -116,7 +120,11 @@ class Client:
 
     def send(self):
         while True:
-            content = input("")
+            content = input()
+            
+            if content == ':q':
+                self.close()
+
             now_time = time.strftime(
                 '%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             msg = self.name + '  ' + str(now_time) + '\n' + content
