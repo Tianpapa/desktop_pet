@@ -51,10 +51,14 @@ class Server:
         self.ip_port = (self.ip, self.port)
 
         self.tcp_socket.bind(self.ip_port)
+        self.establish_connection()
+
+    def establish_connection(self):
         print('Waiting for Client to connect...')
         self.tcp_socket.listen(5)
         self.client_socket, self.client_addr = self.tcp_socket.accept()
-        print(self.client_addr)
+        print('Connection success.')
+        print('Client IP:', self.client_addr, '\n')
 
         send_thread = threading.Thread(target=self.send)
         recv_thread = threading.Thread(target=self.recv)
@@ -63,17 +67,20 @@ class Server:
 
     def send(self):
         while True:
-            content = input(":")
-            now_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-            msg = str(now_time) + '  ' + self.name + '\n' + content
-            data = self.client_socket.send(msg.encode('utf-8'))
-            print(data)
+            content = input("")
+            now_time = time.strftime(
+                '%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            msg = self.name + '  ' + str(now_time) + '\n' + content
+            self.client_socket.send(msg.encode('utf-8'))
             print(msg)
 
     def recv(self):
-        while True:
-            msg = self.client_socket.recv(1024)
-            print(msg.decode('utf-8'))
+        try:
+            while True:
+                msg = self.client_socket.recv(1024)
+                print(msg.decode('utf-8'))
+        except ConnectionResetError:
+            self.establish_connection()
 
     def close(self):
         self.client_socket.close()
@@ -87,10 +94,20 @@ class Client:
             server_ip = data['server']['ip']
             server_port = data['server']['port']
             self.name = data[self.HOST]['name']
-        Server = IPv4(server_ip, server_port)
+        self.Server = IPv4(server_ip, server_port)
 
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.connect(Server.address)
+        self.establish_connection()
+
+    def establish_connection(self):
+        while True:
+            try:
+                print('Try to connect Server...')
+                self.tcp_socket.connect(self.Server.address)
+                break
+            except TimeoutError:
+                continue
+        print('Connection success.\n')
 
         send_thread = threading.Thread(target=self.send)
         recv_thread = threading.Thread(target=self.recv)
@@ -99,17 +116,20 @@ class Client:
 
     def send(self):
         while True:
-            content = input(":")
-            now_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-            msg = str(now_time) + '  ' + self.name + '\n' + content
-            data = self.tcp_socket.send(msg.encode('utf-8'))
-            print(data)
+            content = input("")
+            now_time = time.strftime(
+                '%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            msg = self.name + '  ' + str(now_time) + '\n' + content
+            self.tcp_socket.send(msg.encode('utf-8'))
             print(msg)
 
     def recv(self):
-        while True:
-            msg = self.tcp_socket.recv(1024)
-            print(msg.decode('utf-8'))
+        try:
+            while True:
+                msg = self.tcp_socket.recv(1024)
+                print(msg.decode('utf-8'))
+        except ConnectionResetError:
+            self.establish_connection()
 
     def close(self):
         self.tcp_socket.close()
