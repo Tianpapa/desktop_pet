@@ -60,10 +60,10 @@ class Server:
         print('Connection success.')
         print('Client IP:', self.client_addr, '\n')
 
-        send_thread = threading.Thread(target=self.send)
-        recv_thread = threading.Thread(target=self.recv)
-        send_thread.start()
-        recv_thread.start()
+        self.send_thread = threading.Thread(target=self.send)
+        self.recv_thread = threading.Thread(target=self.recv)
+        self.send_thread.start()
+        self.recv_thread.start()
 
     def send(self):
         while True:
@@ -71,6 +71,7 @@ class Server:
 
             if content == ':q':
                 self.close()
+                break
             
             now_time = time.strftime(
                 '%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
@@ -87,6 +88,8 @@ class Server:
             self.establish_connection()
 
     def close(self):
+        self.send_thread.deamon()
+        self.recv_thread.deamon()
         self.client_socket.close()
 
 
@@ -106,17 +109,19 @@ class Client:
     def establish_connection(self):
         while True:
             try:
-                print('Try to connect Server...')
+                print('Try to connect to Server...')
                 self.tcp_socket.connect(self.Server.address)
                 break
             except TimeoutError:
+                time.sleep(5)
+                print('Fail. Try again after 5 seconds...')
                 continue
         print('Connection success.\n')
 
-        send_thread = threading.Thread(target=self.send)
-        recv_thread = threading.Thread(target=self.recv)
-        send_thread.start()
-        recv_thread.start()
+        self.send_thread = threading.Thread(target=self.send)
+        self.recv_thread = threading.Thread(target=self.recv)
+        self.send_thread.start()
+        self.recv_thread.start()
 
     def send(self):
         while True:
@@ -124,6 +129,7 @@ class Client:
             
             if content == ':q':
                 self.close()
+                break
 
             now_time = time.strftime(
                 '%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
@@ -140,6 +146,8 @@ class Client:
             self.establish_connection()
 
     def close(self):
+        self.send_thread.deamon()
+        self.recv_thread.deamon()
         self.tcp_socket.close()
 
 
