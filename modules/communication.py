@@ -86,6 +86,8 @@ class Server:
                 print(msg.decode('utf-8'))
         except ConnectionResetError:
             self.establish_connection()
+        except ConnectionAbortedError:
+            self.establish_connection()
 
     def close(self):
         self.client_socket.close()

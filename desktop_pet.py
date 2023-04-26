@@ -5,7 +5,7 @@ import os
 import sys
 # import random
 import win32api
-from PIL import Image
+import cv2
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
@@ -20,13 +20,14 @@ class Pet():
         self.img_id = 1
         self.img_num = 20
         self.img_pth = img_pth
-        self.img = Image.open(self.img_pth)
-        self.img_width, self.img_height = self.img.size
+        self.img = cv2.imread(self.img_pth)
+        self.img_height, self.img_width = self.img.shape[:2]
 
         self.birth_pos = (
             self.screen_size[0] - 1.25 * self.img_width, 
             self.screen_size[1] - 1.35 * self.img_height
         )
+        self.birth_pos = tuple(map(int, self.birth_pos))
         self.cur_pos = self.birth_pos
 
     def gif(self):
