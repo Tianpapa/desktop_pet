@@ -90,6 +90,8 @@ class Server:
             self.establish_connection()
 
     def close(self):
+        self.send_thread.deamon()
+        self.recv_thread.deamon()
         self.client_socket.close()
 
 
@@ -109,7 +111,7 @@ class Client:
         while True:
             try:
                 self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                print('Try to connect to Server...')
+                print('Try to connect to to Server...')
                 self.tcp_socket.connect(self.Server.address)
                 break
             except TimeoutError:
@@ -148,6 +150,8 @@ class Client:
             self.establish_connection()
 
     def close(self):
+        self.send_thread.deamon()
+        self.recv_thread.deamon()
         self.tcp_socket.close()
 
 
